@@ -18,6 +18,7 @@ COPY backend/prisma/ ./prisma/
 RUN mkdir -p /app/backend/dist
 
 # نسخ الملفات من مرحلة البناء إلى المجلد الصحيح
+# النسخ إلى المسار المطلق مباشرة
 COPY --from=frontend-build /app/frontend/dist/browser/ /app/backend/dist/
 
 # التأكد من أن الملفات وصلت فعلاً (ستظهر في سجلات Railway)

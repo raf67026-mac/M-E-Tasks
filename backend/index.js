@@ -521,18 +521,21 @@ app.delete("/tasks/:id", authRequired, async (req, res) => {
 });
 
 
-// --- إضافات الاستضافة النهائية للربط مع الأنغولار ---
+// --- إضافات الاستضافة القاطعة ---
 const path = require("path");
 
-// تحديد مسار مجلد الملفات الجاهزة (dist)
-const frontendPath = path.join(__dirname, "dist");
+// استخدام المسار الذي يطلبه السيرفر في الـ Logs بالضبط
+const frontendPath = "/app/backend/dist";
 
-// إخبار السيرفر باستخدام الملفات الثابتة من المجلد
 app.use(express.static(frontendPath));
 
-// توجيه أي طلب لا يخص الـ API إلى ملف index.html
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+        if (err) {
+            console.error("Critical Error: index.html not found at", path.join(frontendPath, "index.html"));
+            res.status(500).send("Path Error: " + err.message);
+        }
+    });
 });
 // ----------------------------------------------
 
