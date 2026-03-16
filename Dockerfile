@@ -20,7 +20,8 @@ WORKDIR /app/backend
 
 # إنشاء مجلد dist ونسخ ملفات Angular إليه من المسار الصحيح
 RUN mkdir -p dist
-COPY --from=frontend-build /app/frontend/dist/frontend/browser/ ./dist/
+# تأكد من استخدام هذه الصيغة لنسخ المحتويات مباشرة إلى مجلد dist
+COPY --from=frontend-build /app/frontend/dist/*/browser/* ./dist/
 
 # سطر سحري للتأكد من نجاح النسخ في السجلات
 RUN ls -la ./dist
