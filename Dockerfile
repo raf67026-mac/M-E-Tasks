@@ -25,6 +25,7 @@ WORKDIR /app/backend
 # ملاحظة: تم تعديل المسار ليشمل اسم المشروع 'frontend' المتوقع من Angular
 RUN mkdir -p dist
 COPY --from=frontend-build /app/frontend/dist/frontend/browser/ ./dist/
+RUN ls -R ./dist
 
 # التأكد من وجود الملفات (لأغراض اللوقز فقط)
 RUN ls -la ./dist
