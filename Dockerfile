@@ -14,8 +14,8 @@ RUN cd backend && npm install
 COPY backend/ ./backend/
 COPY backend/prisma/ ./prisma/
 
-# نسخ ملفات الأنغولار الجاهزة إلى المجلد الذي حددناه في الباكند
-COPY --from=frontend-build /app/frontend/dist/frontend/browser /app/backend/dist
+# النسخ من المسار الفعلي الذي أكدته الصور
+COPY --from=frontend-build /app/frontend/dist/browser /app/backend/dist
 
 # تشغيل Prisma وتجهيز السيرفر
 WORKDIR /app/backend

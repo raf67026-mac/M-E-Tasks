@@ -524,14 +524,17 @@ app.delete("/tasks/:id", authRequired, async (req, res) => {
 // --- إضافات الاستضافة للربط مع الأنغولار ---
 const path = require("path");
 
-// إخبار السيرفر بمكان ملفات الأنغولار الجاهزة
-app.use(express.static(path.join(__dirname, "dist"))); 
+// --- إضافات الاستضافة للربط مع الأنغولار ---
+const path = require("path");
 
-// خام لتجنب مشاكل المكتبات Regex الحل النهائي باستخدام
+// استخدام مسار مطلق لضمان الوصول للملفات
+const distPath = path.join(__dirname, "dist");
+
+app.use(express.static(distPath)); 
+
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-    res.sendFile(path.join(__dirname, "dist", "index.html"));
+    res.sendFile(path.join(distPath, "index.html"));
 });
-// ---------------------------------------
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Backend running http://localhost:${PORT}`));
