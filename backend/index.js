@@ -521,23 +521,18 @@ app.delete("/tasks/:id", authRequired, async (req, res) => {
 });
 
 
-// --- إضافات الاستضافة القاطعة ---
+// --- إضافات الاستضافة النهائية ---
 const path = require("path");
 
-// استخدام المسار الذي يطلبه السيرفر في الـ Logs بالضبط
-const frontendPath = "/app/backend/dist";
+// استخدام path.join مع __dirname للوصول لمجلد dist المجاور للملف
+const frontendPath = path.join(__dirname, "dist");
 
 app.use(express.static(frontendPath));
 
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-        if (err) {
-            console.error("Critical Error: index.html not found at", path.join(frontendPath, "index.html"));
-            res.status(500).send("Path Error: " + err.message);
-        }
-    });
+    res.sendFile(path.join(frontendPath, "index.html"));
 });
-// ----------------------------------------------
+// ------------------------------
 
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));

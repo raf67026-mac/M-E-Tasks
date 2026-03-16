@@ -14,19 +14,17 @@ RUN cd backend && npm install
 COPY backend/ ./backend/
 COPY backend/prisma/ ./prisma/
 
-# إنشاء مجلد dist يدوياً للتأكد من وجوده
-RUN mkdir -p /app/backend/dist
+# الانتقال لمجلد الباكند أولاً
+WORKDIR /app/backend
 
-# نسخ الملفات من مرحلة البناء إلى المجلد الصحيح
-# النسخ إلى المسار المطلق مباشرة
-COPY --from=frontend-build /app/frontend/dist/browser/ /app/backend/dist/
+# إنشاء المجلد ونسخ الملفات بداخله مباشرة
+RUN mkdir -p dist
+COPY --from=frontend-build /app/frontend/dist/browser/ ./dist/
 
-# التأكد من أن الملفات وصلت فعلاً (ستظهر في سجلات Railway)
-RUN ls -la /app/backend/dist
+# التأكد من أننا نرى الملفات داخل المجلد الحالي
+RUN ls -la dist
 
 # تشغيل السيرفر
-WORKDIR /app/backend
 RUN npx prisma generate
-
 EXPOSE 3000
 CMD npx prisma migrate deploy && node index.js
