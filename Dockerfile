@@ -17,14 +17,19 @@ COPY backend/prisma/ ./prisma/
 # الانتقال لمجلد الباكند أولاً
 WORKDIR /app/backend
 
-# إنشاء المجلد ونسخ الملفات بداخله مباشرة
+# الانتقال لمجلد الباكند أولاً كبيئة عمل أساسية
+WORKDIR /app/backend
+
+# إنشاء مجلد dist داخل المجلد الحالي (app/backend/)
 RUN mkdir -p dist
+
+# نسخ محتويات الانغولار إلى مجلد dist الذي أنشأناه
 COPY --from=frontend-build /app/frontend/dist/browser/ ./dist/
 
-# التأكد من أننا نرى الملفات داخل المجلد الحالي
-RUN ls -la dist
+# أمر للتاكد من أن الملفات موجودة فعلاً في المكان الصحيح
+RUN ls -la ./dist
 
-# تشغيل السيرفر
+# تجهيز قاعدة البيانات وتشغيل المشروع
 RUN npx prisma generate
 EXPOSE 3000
 CMD npx prisma migrate deploy && node index.js
