@@ -72,16 +72,13 @@ async function forgotHandler(req, res) {
 }
 app.post("/auth/forgot-password", forgotHandler);
 
-// (أضف هنا بقية مساراتك: /auth/login, /tasks, إلخ...)
-
 // --- إعدادات الاستضافة النهائية ---
-const path = require("path");
 
-// المسار الذي حددناه في Dockerfile
+// 1. تحديد المسار (تأكد أن كلمة path معرفة في أول الملف فقط)
 const frontendPath = path.join(__dirname, "dist");
 app.use(express.static(frontendPath));
 
-// توجيه كل المسارات (ما عدا الـ API) إلى Angular
+// 2. توجيه المسارات
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"), (err) => {
         if (err) {
@@ -91,5 +88,6 @@ app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
     });
 });
 
+// 3. تشغيل السيرفر
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
