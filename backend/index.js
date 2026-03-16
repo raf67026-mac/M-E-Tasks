@@ -79,14 +79,12 @@ const frontendPath = path.join(__dirname, "dist");
 app.use(express.static(frontendPath));
 
 // بدلاً من "*" استخدم "(.*)" ليتوافق مع الإصدارات الجديدة
-app.get("(.*)", (req, res, next) => {
-  const apiPaths = ['/auth', '/tasks', '/users', '/ai', '/mood'];
-  if (apiPaths.some(p => req.url.startsWith(p))) {
-      return next();
-  }
+// استخدام التعبير النمطي المباشر (Regex) لضمان التوافق
+app.get(/^(?!\/auth|\/tasks|\/users|\/ai|\/mood).*$/, (req, res, next) => {
   res.sendFile(path.join(frontendPath, "index.html"), (err) => {
       if (err) {
-          res.status(500).send("Frontend files not found.");
+          console.error("FRONTEND_ERROR: index.html not found at", frontendPath);
+          res.status(500).send("Frontend files not found. Check deployment logs.");
       }
   });
 });
