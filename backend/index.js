@@ -78,20 +78,17 @@ app.post("/auth/forgot-password", forgotHandler);
 const frontendPath = path.join(__dirname, "dist");
 app.use(express.static(frontendPath));
 
-app.get("*", (req, res, next) => {
-    // قائمة البادئات التي تخص الـ API ولا نريد توجيهها لـ Angular
-    const apiPaths = ['/auth', '/tasks', '/users', '/ai', '/mood'];
-    if (apiPaths.some(p => req.url.startsWith(p))) {
-        return next();
-    }
-    
-    // توجيه أي مسار آخر لملف index.html الخاص بـ Angular
-    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-        if (err) {
-            console.error("FRONTEND_ERROR: index.html not found at", frontendPath);
-            res.status(500).send("Frontend files not found. Check deployment logs.");
-        }
-    });
+// بدلاً من "*" استخدم "(.*)" ليتوافق مع الإصدارات الجديدة
+app.get("(.*)", (req, res, next) => {
+  const apiPaths = ['/auth', '/tasks', '/users', '/ai', '/mood'];
+  if (apiPaths.some(p => req.url.startsWith(p))) {
+      return next();
+  }
+  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+      if (err) {
+          res.status(500).send("Frontend files not found.");
+      }
+  });
 });
 
 // Railway يرسل المنفذ تلقائياً عبر PORT
