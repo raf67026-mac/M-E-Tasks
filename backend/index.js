@@ -521,16 +521,23 @@ app.delete("/tasks/:id", authRequired, async (req, res) => {
 });
 
 
-// --- إضافات الاستضافة للربط مع الأنغولار ---
+// --- إضافات الاستضافة النهائية ---
 const path = require("path");
 
-// --- إضافات الاستضافة للربط مع الأنغولار ---
-const path = require("path");
+// هذا السطر سيجعل السيرفر يبحث في المجلد الحالي عن 'dist'
+const frontendPath = path.resolve(__dirname, "dist");
 
-// استخدام مسار مطلق لضمان الوصول للملفات
-const distPath = path.join(__dirname, "dist");
+app.use(express.static(frontendPath));
 
-app.use(express.static(distPath)); 
+app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+        if (err) {
+            console.error("Error sending index.html:", err);
+            res.status(500).send("Frontend files missing");
+        }
+    });
+});
+// ---------------------------------------
 
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));

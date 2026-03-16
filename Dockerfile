@@ -15,7 +15,8 @@ COPY backend/ ./backend/
 COPY backend/prisma/ ./prisma/
 
 # النسخ من المسار الفعلي الذي أكدته الصور
-COPY --from=frontend-build /app/frontend/dist/browser /app/backend/dist
+# تأكدي أن المسار ينتهي بكلمة dist فقط بدون /app/backend/dist
+COPY --from=frontend-build /app/frontend/dist/browser ./backend/dist
 
 # تشغيل Prisma وتجهيز السيرفر
 WORKDIR /app/backend
