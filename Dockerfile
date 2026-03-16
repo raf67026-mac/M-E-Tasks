@@ -1,4 +1,4 @@
-# 1. بناء الفرونتد (Angular)
+# 1. مرحلة بناء الفرونتد (Angular)
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
@@ -6,30 +6,34 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
-# 2. تجهيز الباكدند (Node.js)
+# 2. مرحلة تجهيز الباكدند والتشغيل (Node.js)
 FROM node:20-alpine
 WORKDIR /app
+
+# نسخ ملفات الباكدند وتثبيت المكتبات
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install
+
+# نسخ كود الباكدند وملفات Prisma
 COPY backend/ ./backend/
-COPY backend/prisma/ ./prisma/
+COPY backend/prisma/ ./backend/prisma/
 
-# الانتقال لمجلد الباكند أولاً
+# الانتقال لبيئة عمل الباكدند
 WORKDIR /app/backend
 
-# الانتقال لمجلد الباكند أولاً كبيئة عمل أساسية
-WORKDIR /app/backend
-
-# إنشاء مجلد dist داخل المجلد الحالي (app/backend/)
+# إنشاء مجلد dist ونسخ ملفات Angular إليه
+# ملاحظة: تم تعديل المسار ليشمل اسم المشروع 'frontend' المتوقع من Angular
 RUN mkdir -p dist
+COPY --from=frontend-build /app/frontend/dist/frontend/browser/ ./dist/
 
-# نسخ محتويات الانغولار إلى مجلد dist الذي أنشأناه
-COPY --from=frontend-build /app/frontend/dist/browser/ ./dist/
-
-# أمر للتاكد من أن الملفات موجودة فعلاً في المكان الصحيح
+# التأكد من وجود الملفات (لأغراض اللوقز فقط)
 RUN ls -la ./dist
 
-# تجهيز قاعدة البيانات وتشغيل المشروع
+# توليد ملفات Prisma Client
 RUN npx prisma generate
-EXPOSE 3000
+
+# التوافق مع منفذ الكود الأساسي
+EXPOSE 8080
+
+# تنفيذ التهجير وتشغيل السيرفر
 CMD npx prisma migrate deploy && node index.js
