@@ -525,11 +525,11 @@ app.delete("/tasks/:id", authRequired, async (req, res) => {
 const path = require("path");
 
 // إخبار السيرفر بمكان ملفات الأنغولار الجاهزة
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "dist"))); 
 
-// الحل النهائي باستخدام Regex خام لتجنب مشاكل المكتبات
+// خام لتجنب مشاكل المكتبات Regex الحل النهائي باستخدام
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 // ---------------------------------------
 
