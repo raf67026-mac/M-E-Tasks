@@ -534,10 +534,11 @@ const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
 
 // توجيه أي طلب غير معروف لواجهة الأنغولار (مهم جداً للـ Routing)
-app.get("*", (req, res, next) => {
-  // إذا كان الطلب يبدأ بـ /auth أو /tasks أو /users، اتركه يمر للـ API
+// Routing مهم جداً للـ (.*) توجيه أي طلب غير معروف لواجهة الأنغولار
+app.get('(.*)', (req, res, next) => {
+  // API اتركه يمر للـ auth أو tasks أو users إذا كان الطلب يبدأ بـ
   if (req.url.startsWith('/auth') || req.url.startsWith('/tasks') || req.url.startsWith('/users') || req.url.startsWith('/ai') || req.url.startsWith('/mood')) {
-    return next();
+      return next();
   }
   // غير ذلك، أرسل ملف الأنغولار الرئيسي
   res.sendFile(path.join(__dirname, "public", "index.html"));
