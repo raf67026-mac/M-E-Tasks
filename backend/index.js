@@ -533,14 +533,8 @@ const path = require("path");
 // إخبار السيرفر بمكان ملفات الأنغولار الجاهزة
 app.use(express.static(path.join(__dirname, "public")));
 
-// توجيه أي طلب غير معروف لواجهة الأنغولار (مهم جداً للـ Routing)
-// التعديل الجديد: إعطاء اسم للمتغير داخل الأقواس
-app.get('/:any*', (req, res, next) => {
-  // API اتركه يمر للـ auth أو tasks أو users إذا كان الطلب يبدأ بـ
-  if (req.url.startsWith('/auth') || req.url.startsWith('/tasks') || req.url.startsWith('/users') || req.url.startsWith('/ai') || req.url.startsWith('/mood')) {
-      return next();
-  }
-  // غير ذلك، أرسل ملف الأنغولار الرئيسي
+// الحل النهائي باستخدام Regex خام لتجنب مشاكل المكتبات
+app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 // ---------------------------------------
