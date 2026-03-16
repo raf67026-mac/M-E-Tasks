@@ -12,7 +12,7 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install
 COPY backend/ ./backend/
-COPY prisma/ ./prisma/ 
+COPY backend/prisma/ ./prisma/
 
 # نسخ ملفات الأنغولار الجاهزة إلى داخل الباكدند
 COPY --from=frontend-build /app/frontend/dist/browser ./backend/public
