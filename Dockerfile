@@ -15,7 +15,7 @@ COPY backend/ ./backend/
 COPY backend/prisma/ ./prisma/
 
 # نسخ ملفات الأنغولار الجاهزة إلى داخل الباكدند
-COPY --from=frontend-build /app/frontend/dist/browser ./backend/public
+COPY --from=frontend-build /app/frontend/dist/frontend/browser ./backend/public
 
 # تشغيل Prisma وتجهيز السيرفر
 WORKDIR /app/backend
