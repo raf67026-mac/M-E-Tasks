@@ -1,28 +1,14 @@
-# المرحلة الأولى: بناء واجهة الأنغولار
-FROM node:20-alpine AS build-stage
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ .
-RUN npm run build
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: moodtasks
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-# المرحلة الثانية: تجهيز سيرفر الباكند
-FROM node:20-alpine
-WORKDIR /app
-COPY backend/package*.json ./backend/
-RUN cd backend && npm install
-COPY backend/ .
-COPY prisma ./prisma
-
-# نسخ الملفات التي تم بناؤها من المرحلة الأولى إلى الباكند
-# ملاحظة: تأكدي أن مسار dist/frontend/browser هو الصحيح في مشروعك
-COPY --from=build-stage /app/frontend/dist/frontend/browser ./backend/public
-
-# تشغيل Prisma وتجهيز السيرفر
-RUN npx prisma generate
-
-WORKDIR /app/backend
-EXPOSE 3000
-
-# الأمر النهائي: تحديث قاعدة البيانات وتشغيل الموقع
-CMD npx prisma migrate deploy && node index.js
+volumes:
+  pgdata:
