@@ -10,30 +10,23 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-# نسخ ملفات الباكدند وتثبيت المكتبات
+# نسخ ملفات الباكدند
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install
-
-# نسخ كود الباكدند وملفات Prisma
 COPY backend/ ./backend/
-COPY backend/prisma/ ./backend/prisma/
 
 # الانتقال لبيئة عمل الباكدند
 WORKDIR /app/backend
 
-# إنشاء مجلد dist ونسخ ملفات Angular إليه
-# ملاحظة: تم تعديل المسار ليشمل اسم المشروع 'frontend' المتوقع من Angular
+# إنشاء مجلد dist ونسخ ملفات Angular إليه من المسار الصحيح
 RUN mkdir -p dist
 COPY --from=frontend-build /app/frontend/dist/frontend/browser/ ./dist/
-RUN ls -R ./dist
 
-# التأكد من وجود الملفات (لأغراض اللوقز فقط)
+# سطر سحري للتأكد من نجاح النسخ في السجلات
 RUN ls -la ./dist
 
-# توليد ملفات Prisma Client
+# توليد ملفات Prisma Client والمنفذ
 RUN npx prisma generate
-
-# التوافق مع منفذ الكود الأساسي
 EXPOSE 8080
 
 # تنفيذ التهجير وتشغيل السيرفر

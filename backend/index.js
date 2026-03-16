@@ -74,21 +74,22 @@ app.post("/auth/forgot-password", forgotHandler);
 
 // (أضف هنا بقية مساراتك: /auth/login, /tasks, إلخ...)
 
-// --- 5. إعدادات استضافة ملفات Angular (نهاية الملف) ---
-// تأكد من تعريف المسار بشكل صحيح
-const frontendPath = path.join(__dirname, "dist"); 
+// --- إعدادات الاستضافة النهائية ---
+const path = require("path");
+
+// المسار الذي حددناه في Dockerfile
+const frontendPath = path.join(__dirname, "dist");
 app.use(express.static(frontendPath));
 
+// توجيه كل المسارات (ما عدا الـ API) إلى Angular
 app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"), (err) => {
         if (err) {
-            // هذا السطر سيطبع لك المسار الذي فشل فيه السيرفر في البحث
-            console.error("FRONTEND_ERROR: index.html not found at", frontendPath);
-            res.status(500).send("Frontend files not found. Check Dockerfile paths.");
+            console.error("FRONTEND_ERROR: Looked for index.html at", path.join(frontendPath, "index.html"));
+            res.status(500).send("Frontend files missing. Check Dockerfile COPY command.");
         }
     });
 });
 
-// Railway يرسل المنفذ تلقائياً عبر PORT
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
