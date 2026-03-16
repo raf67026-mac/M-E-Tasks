@@ -183,12 +183,6 @@ function authRequired(req, res, next) {
 }
 
 
-app.get("/", (req, res) => {
-  res.send("API is running 🚀");
-});
-
-
-
 
 app.post("/auth/register", async (req, res) => {
   try {
