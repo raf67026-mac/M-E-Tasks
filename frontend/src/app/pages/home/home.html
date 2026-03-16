@@ -1,0 +1,319 @@
+<div class="h-page" [class.modal-open]="expandedLane || aiOpen">
+  <header class="h-top glass">
+    <div class="h-brand">
+      <div class="h-title">My Tasks</div>
+      <div class="h-sub">
+        Mood: <b>{{ moodLabel(todayMood) }}</b>
+        <span class="sep">•</span>
+        Energy: <b>{{ energyLabel(todayEnergy) }}</b>
+      </div>
+    </div>
+
+    <div class="h-actions">
+      <button class="icon-btn" type="button" (click)="goMood()" aria-label="Mood">☺️</button>
+      <button class="icon-btn" type="button" (click)="goProfile()" aria-label="Profile">👩🏻</button>
+      <button class="logout-btn" type="button" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="h-body" [class.blurred]="expandedLane || aiOpen">
+
+
+  <section class="stats glass" [class.dim]="expandedLane">
+    <button class="stat" type="button" (click)="openStatus('ALL')" [class.active]="statusFilter==='ALL'">
+      <div class="k">All</div>
+      <div class="v">{{ tasks.length }}</div>
+    </button>
+
+    <button class="stat" type="button" (click)="openStatus('PENDING')" [class.active]="statusFilter==='PENDING'">
+      <div class="k">Pending</div>
+      <div class="v">{{ pendingCount }}</div>
+    </button>
+
+    <button class="stat" type="button" (click)="openStatus('IN_PROGRESS')" [class.active]="statusFilter==='IN_PROGRESS'">
+      <div class="k">In progress</div>
+      <div class="v">{{ inProgressCount }}</div>
+    </button>
+
+    <button class="stat" type="button" (click)="openStatus('COMPLETED')" [class.active]="statusFilter==='COMPLETED'">
+      <div class="k">Completed</div>
+      <div class="v">{{ completedCount }}</div>
+    </button>
+
+    <div class="state" *ngIf="loading">Loading…</div>
+    <div class="state err" *ngIf="error">{{ error }}</div>
+  </section>
+
+  <section class="lanes" [class.dim]="expandedLane">
+    <button class="lane-card glass high" type="button" (click)="openLane('HIGH')">
+      <div class="lh">
+        <div class="t">High energy</div>
+        <div class="pill">{{ highTasks.length }}</div>
+      </div>
+      <div class="d muted">Deep focus tasks</div>
+      <div class="hint">Tap to view</div>
+    </button>
+
+    <button class="lane-card glass med" type="button" (click)="openLane('MEDIUM')">
+      <div class="lh">
+        <div class="t">Medium energy</div>
+        <div class="pill">{{ mediumTasks.length }}</div>
+      </div>
+      <div class="d muted">Balanced tasks</div>
+      <div class="hint">Tap to view</div>
+    </button>
+
+    <button class="lane-card glass low" type="button" (click)="openLane('LOW')">
+      <div class="lh">
+        <div class="t">Low energy</div>
+        <div class="pill">{{ lowTasks.length }}</div>
+      </div>
+      <div class="d muted">Light tasks</div>
+      <div class="hint">Tap to view</div>
+    </button>
+  </section>
+
+ 
+  <button class="fab" type="button" (click)="goAddTask()" aria-label="Add task">+</button>
+
+  <button class="fab-ai" type="button" (click)="openAiPopup()" aria-label="{{ tr('Open ChatGPT','افتح ChatGPT') }}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="22" viewBox="0 0 30 30" aria-hidden="true">
+      <path d="M 14.070312 2 C 11.330615 2 8.9844456 3.7162572 8.0390625 6.1269531 C 6.061324 6.3911222 4.2941948 7.5446684 3.2773438 9.3066406 C 1.9078196 11.678948 2.2198602 14.567816 3.8339844 16.591797 C 3.0745422 18.436097 3.1891418 20.543674 4.2050781 22.304688 C 5.5751778 24.677992 8.2359331 25.852135 10.796875 25.464844 C 12.014412 27.045167 13.895916 28 15.929688 28 C 18.669385 28 21.015554 26.283743 21.960938 23.873047 C 23.938676 23.608878 25.705805 22.455332 26.722656 20.693359 C 28.09218 18.321052 27.78014 15.432184 26.166016 13.408203 C 26.925458 11.563903 26.810858 9.4563257 25.794922 7.6953125 C 24.424822 5.3220082 21.764067 4.1478652 19.203125 4.5351562 C 17.985588 2.9548328 16.104084 2 14.070312 2 z"></path>
+    </svg>
+  </button>
+  </div>
+
+  
+    <div class="ai-backdrop" *ngIf="aiOpen" (click)="closeAiPopup()"></div>
+
+  <div class="ai-modal glass" *ngIf="aiOpen" (click)="$event.stopPropagation()">
+    <div class="ai-head">
+      <div class="ai-title">M&amp;E Tasks AI ✨</div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="ai-icon" type="button" *ngIf="aiCanBack()" (click)="aiBack()" aria-label="Back">↩</button>
+        <button class="ai-icon" type="button" (click)="closeAiPopup()" aria-label="Close">×</button>
+      </div>
+    </div>
+
+    <div class="ai-cats-row">
+      <button
+        type="button"
+        class="cat-btn"
+        *ngFor="let c of aiCategories"
+        [class.active]="aiCategory === c.id"
+        (click)="selectAiCategory(c.id)"
+      >
+        <span class="ic" aria-hidden="true">{{ c.icon }}</span>
+        <span class="txt">{{ aiLang === 'ar' ? c.ar : c.en }}</span>
+      </button>
+
+      <button class="cat-btn surprise" type="button" (click)="surpriseMe()">
+        {{ aiLang === 'ar' ? 'فاجئني' : 'Surprise me' }}
+      </button>
+
+      <button class="ai-lang" type="button" (click)="toggleAiLang()">
+        {{ aiLang === 'ar' ? 'EN' : 'AR' }}
+      </button>
+    </div>
+
+    <div class="ai-controls">
+      <input
+        class="ai-input"
+        type="text"
+        [(ngModel)]="aiInput"
+        [placeholder]="aiLang === 'ar' ? 'اكتب/ي سؤالك…' : 'Ask a question…'"
+        (keydown.enter)="askAi()"
+        [attr.dir]="aiLang === 'ar' ? 'rtl' : 'ltr'"
+      />
+      <button class="ai-send" type="button" (click)="askAi()" [disabled]="aiLoading || !(aiInput || '').trim()">
+        {{ aiLang === 'ar' ? 'إرسال' : 'Send' }}
+      </button>
+    </div>
+
+    <div class="ai-body">
+      <ng-container *ngIf="!aiAnswer; else answerBlock">
+      <div class="ai-overview" *ngIf="aiCategory === 'overview'">
+        <div class="ai-score">
+          ⭐ {{ aiLang === 'ar' ? 'مؤشر الإنتاجية' : 'Productivity Score' }}:
+          <b>{{ aiOverview.score }}%</b>
+        </div>
+        <div class="ai-msg">{{ aiOverview.message }}</div>
+        <div class="ai-suggestion">👉 {{ aiOverview.suggestion }}</div>
+        <div class="ai-weekly">📊 {{ aiOverview.weekly }}</div>
+      </div>
+
+      <!-- Planning actions -->
+        <div class="ai-panel" *ngIf="aiCategory === 'planning'">
+          <div class="ai-panel-title">{{ aiLang === 'ar' ? 'أوامر سريعة للتخطيط' : 'Quick planning actions' }}</div>
+          <div class="ai-panel-actions">
+            <button type="button" class="ai-action" (click)="aiAutoPlanDay()">
+              {{ aiLang === 'ar' ? '🗓️ خطّط لي يومي' : '🗓️ Plan my day' }}
+            </button>
+            <button type="button" class="ai-action" (click)="quickAsk(aiLang === 'ar' ? 'سوِّ لي خطة بنظام الوقت للـساعتين الجاية' : 'Create a time-boxed plan for the next 2 hours')">
+              {{ aiLang === 'ar' ? '⏱️ خطّة ساعتين' : '⏱️ 2-hour plan' }}
+            </button>
+          </div>
+          <div class="ai-panel-note">
+            {{ aiLang === 'ar' ? 'كوتش: اختاري خطوة واحدة الآن—الزخم أهم من المثالية 💪' : 'Coach: pick one step now—momentum beats perfection 💪' }}
+          </div>
+        </div>
+
+        <!-- Task Breakdown actions -->
+        <div class="ai-panel" *ngIf="aiCategory === 'steps'">
+          <div class="ai-panel-title">{{ aiLang === 'ar' ? 'اختاري مهمة عشان أقسمها لك' : 'Pick a task to break into steps' }}</div>
+
+          <div class="ai-task-pick">
+            <button
+              type="button"
+              class="ai-task-btn"
+              *ngFor="let t of aiBreakableTasks()"
+              (click)="aiBreakTask(t)"
+              [attr.title]="t.title"
+            >
+              <span class="ai-task-title">{{ t.title }}</span>
+              <span class="ai-task-meta">{{ aiFmt(t.duration) }} • {{ t.status }}</span>
+            </button>
+
+            <div class="ai-empty" *ngIf="aiBreakableTasks().length === 0">
+              {{ aiLang === 'ar' ? 'ما عندك مهام حالياً—أضيفي مهمة جديدة أولاً.' : 'No tasks yet—add a new task first.' }}
+            </div>
+          </div>
+
+          <div class="ai-panel-note">
+            {{ aiLang === 'ar' ? 'نصيحة: بعد ما أقسمها لك، ابدئي بالخطوة رقم 1 لمدة 15 دقيقة فقط.' : 'Tip: after the breakdown, start step #1 for just 15 minutes.' }}
+          </div>
+        </div>
+
+        <!-- Insights actions -->
+        <div class="ai-panel" *ngIf="aiCategory === 'insights'">
+          <div class="ai-panel-title">{{ aiLang === 'ar' ? 'تحليلات ذكية (محلية)' : 'Smart insights (local)' }}</div>
+          <div class="ai-panel-actions">
+            <button type="button" class="ai-action" (click)="aiWeeklyInsights()">
+              {{ aiLang === 'ar' ? '📊 تحليل أسبوعي' : '📊 Weekly insight' }}
+            </button>
+            <button type="button" class="ai-action" (click)="aiShowProductivityScore()">
+              {{ aiLang === 'ar' ? '⭐ نسبة إنتاجيتي' : '⭐ My productivity score' }}
+            </button>
+          </div>
+          <div class="ai-panel-note">
+            {{ aiLang === 'ar' ? 'هذه التحليلات تعتمد على مهامك الحالية وسجل محادثات الـAI.' : 'These insights use your current tasks + AI chat history.' }}
+          </div>
+        </div>
+      <div class="ai-hint">{{ aiLang === 'ar' ? 'جرّب/ي أحد هذه:' : 'Try one of these:' }}</div>
+
+        <div class="ai-suggest-list" [class.anim]="aiCatAnim">
+          <button
+            type="button"
+            class="ai-suggest-btn"
+            *ngFor="let s of getAiSuggestions()"
+            (click)="quickAsk(aiLang === 'ar' ? s.ar : s.en)"
+          >
+            <span class="dot">•</span>
+            <span class="t">{{ aiLang === 'ar' ? s.ar : s.en }}</span>
+          </button>
+
+          <div class="ai-empty" *ngIf="getAiSuggestions().length === 0">
+            {{ aiLang === 'ar' ? 'لا توجد اقتراحات تناسب طاقتك الحالية لهذه الفئة.' : 'No suggestions match your current energy for this category.' }}
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #answerBlock>
+        <div class="ai-answer" [attr.dir]="aiLang === 'ar' ? 'rtl' : 'ltr'">
+          <div class="ai-answer-text">{{ aiAnswer }}</div>
+        </div>
+      </ng-template>
+
+      <div class="ai-error" *ngIf="aiError">{{ aiError }}</div>
+      
+      <!-- History -->
+      <div class="ai-history" *ngIf="aiCategory === 'history'">
+        <div class="ai-history-head">
+          <div class="ai-history-title">{{ aiLang === 'ar' ? 'سجل المحادثات' : 'Conversation history' }}</div>
+          <button type="button" class="ai-mini danger" (click)="clearAiHistory()" [disabled]="aiHistory.length===0">
+            {{ aiLang === 'ar' ? 'مسح' : 'Clear' }}
+          </button>
+        </div>
+
+        <div class="ai-empty" *ngIf="aiHistory.length===0">
+          {{ aiLang === 'ar' ? 'ما فيه سجل .' : 'No history yet.' }}
+        </div>
+
+        <div class="ai-history-list" *ngIf="aiHistory.length>0">
+          <button type="button" class="ai-hitem" *ngFor="let h of aiHistory" (click)="openHistoryItem(h)">
+            <div class="ai-h-top">
+              <span class="ai-h-time">{{ h.ts | date:'short' }}</span>
+              <span class="ai-h-cat">{{ h.category }}</span>
+            </div>
+            <div class="ai-h-q">{{ h.q }}</div>
+          </button>
+        </div>
+	  </div>
+
+	</div> <!-- /ai-body -->
+
+	    <div class="ai-footer">
+      <button class="open" type="button" (click)="openChatGPT()">
+        {{ aiLang === 'ar' ? 'افتح ChatGPT' : 'Open ChatGPT' }}
+      </button>
+    </div>
+  </div>
+
+
+  <div class="backdrop" *ngIf="expandedLane" (click)="closeLane()"></div>
+
+  <div class="modal glass" *ngIf="expandedLane" (click)="$event.stopPropagation()">
+    <div class="m-head">
+      <div class="m-title">{{ activeLaneTitle }}</div>
+      <button class="x" type="button" (click)="closeLane()" aria-label="Close">✕</button>
+    </div>
+
+    <div class="m-sub muted">
+      {{ activeLaneCount }} task{{ activeLaneCount === 1 ? '' : 's' }} • filtered: <b>{{ statusFilter }}</b>
+      <span class="sep">•</span>
+      <span class="muted">Tip: click the dot to cycle status</span>
+    </div>
+
+    <div class="m-body">
+      <div class="empty" *ngIf="!activeTasks.length">No tasks here.</div>
+
+      <div class="task" *ngFor="let t of visibleActiveTasks">
+        <button
+          class="dot-btn"
+          type="button"
+          (click)="onTaskClick(t, $event)"
+          (dblclick)="onTaskDoubleClick(t, $event)"
+          aria-label="Toggle status"
+        >
+          <span class="dot" [class.checked]="t.status === 'IN_PROGRESS'" [class.done]="t.status === 'COMPLETED'"></span>
+        </button>
+
+        <div class="t-main">
+          <div class="t-title">{{ t.title }}</div>
+          <div class="t-meta">
+            {{ durationLabel(t.duration) }}
+            <span class="sep">•</span>
+            <span [ngClass]="statusPillClass(t.status)">{{ statusLabel(t.status) }}</span>
+          </div>
+        </div>
+
+        <div class="t-actions">
+          <button class="undo" type="button" (click)="undoLastStatus(t, $event)" aria-label="Undo">↺</button>
+          <button class="trash" type="button" (click)="deleteTask(t.id, $event)" aria-label="Delete">🗑️</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-more" *ngIf="hasMoreActiveTasks">
+      <button type="button" class="more-btn" (click)="toggleModalExpand()">
+        {{ modalExpanded ? 'Show less ▲' : 'More ▼' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" *ngIf="toastOpen" aria-live="polite" (click)="closeToast()">
+    <div class="toast-title">Notice</div>
+    <div class="toast-msg">{{ toastText }}</div>
+  </div>
+</div>

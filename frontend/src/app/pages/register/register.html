@@ -1,0 +1,80 @@
+<div class="scene page page-register">
+    <div class="reg-wrap card">
+      <div class="reg-head">
+        <div class="brand">
+          <span class="logo">✦</span>
+          <span class="brand-text">create account</span>
+        </div>
+  
+        <h1 class="reg-title">Join Us</h1>
+        <p class="reg-sub muted">Start organizing your tasks with mood & energy ✨</p>
+      </div>
+  
+      <form class="reg-form" (ngSubmit)="register()">
+        <div class="field">
+          <label class="label">Username</label>
+          <input
+            class="input"
+            type="text"
+            name="username"
+            [(ngModel)]="username"
+            required
+            placeholder="Name"
+            autocomplete="username"
+          />
+        </div>
+  
+        <div class="field">
+          <label class="label">Email</label>
+          <input
+            class="input"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+        </div>
+  
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="pass">
+            <input
+              class="input"
+              [type]="showPass ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="password"
+              required
+              placeholder="••••••••"
+              autocomplete="new-password"
+            />
+            <button type="button" class="eye" (click)="togglePass()" aria-label="Toggle password">
+              {{ showPass ? '🙈' : '🙉' }}
+            </button>
+          </div>
+        </div>
+  
+        <button class="btn btn-primary w100" [disabled]="loading">
+          <span class="btn-glow"></span>
+          {{ loading ? 'Creating…' : 'Create Account' }}
+        </button>
+  
+        <p class="err" *ngIf="error">{{ error }}</p>
+  
+        <div class="reg-links">
+          <a class="link" routerLink="/auth">Back to login</a>
+          <span class="tiny muted">By continuing, you agree to be awesome ✨</span>
+        </div>
+      </form>
+  
+      <div class="reg-foot muted">
+        Tip: You can edit your profile later from the Home avatar.
+      </div>
+    </div>
+  
+    <div class="sparkles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  

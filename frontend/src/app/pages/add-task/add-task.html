@@ -1,0 +1,123 @@
+<div class="scene page page-add">
+  <div class="at-wrap card">
+    <div class="at-head">
+      <button class="back" type="button" (click)="goBack()" aria-label="Back">← Back</button>
+
+      <div class="titlebox">
+        <h1 class="at-title">Add New Task</h1>
+        <p class="at-sub muted">Create a task that matches your energy ✨</p>
+      </div>
+    </div>
+
+    <div class="at-grid">
+      <div class="panel">
+        <div class="field">
+          <label class="label">Task title</label>
+          <input
+            class="input"
+            type="text"
+            placeholder="e.g. Finish UI polish"
+            [(ngModel)]="title"
+            name="title"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label class="label">Duration</label>
+
+          <div class="duration-row">
+            <input
+              class="input"
+              type="number"
+              placeholder="15"
+              [(ngModel)]="durationValue"
+              name="durationValue"
+              (ngModelChange)="onDurationInputChange()"
+              min="1"
+              step="1"
+            />
+
+            <select
+              class="input select"
+              [(ngModel)]="durationUnit"
+              name="durationUnit"
+              (ngModelChange)="onDurationInputChange()"
+            >
+              <option value="MINUTES">Minutes</option>
+              <option value="HOURS">Hours</option>
+              <option value="DAYS">Days</option>
+            </select>
+          </div>
+
+          <p class="hint muted">Allowed: 15 minutes → 30 days</p>
+        </div>
+
+        <div class="badge-row">
+          <div class="badge" [ngClass]="badgeClass()">
+            <div class="b-dot"></div>
+            <div class="b-text">
+              <div class="b-title">Energy Level</div>
+              <div class="b-value">{{ energyLevel }}</div>
+            </div>
+          </div>
+
+          <div class="meta card">
+            <div class="meta-title">Auto suggestion</div>
+            <div class="meta-text muted">
+              Based on duration, your task is suggested for the best energy lane.
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w100" type="button" (click)="submit()" [disabled]="saving">
+          <span class="btn-glow"></span>
+          {{ saving ? 'Saving…' : 'Save Task' }}
+        </button>
+
+        <p class="err" *ngIf="error">{{ error }}</p>
+      </div>
+
+      <div class="panel preview card">
+        <div class="pv-top">
+          <div class="pv-title">Preview</div>
+          <div class="pv-pill">{{ durationPill }}</div>
+        </div>
+
+        <div class="pv-card" [ngClass]="badgeClass()">
+          <div class="pv-name">{{ title || 'Task title…' }}</div>
+          <div class="pv-sub muted">
+            Suggested: <b>{{ energyLevel }}</b> energy
+          </div>
+          <div class="pv-sub muted">
+            Normalized: <b>{{ durationMinutes }}</b> minutes
+          </div>
+          <div class="pv-bar">
+            <span></span>
+          </div>
+        </div>
+
+        <div class="pv-hint muted">
+          You can edit tasks later from Home.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" *ngIf="toastOpen" aria-live="polite">
+    <div class="t-emoji">✨</div>
+    <div class="t-body">
+      <div class="t-title">Saved</div>
+      <div class="t-text">Your task is ready. Let’s keep going!</div>
+      <div class="t-actions">
+        <button type="button" class="t-btn" (click)="goHome()">Go Home</button>
+        <button type="button" class="t-btn ghost" (click)="closeToast()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sparkles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+  </div>
+</div>

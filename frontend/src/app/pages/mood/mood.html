@@ -1,0 +1,95 @@
+<div class="scene page page-mood">
+  <div class="m-wrap card">
+    <div class="m-head">
+      <a class="back" routerLink="/home" aria-label="Back">← Back</a>
+
+      <div class="titlebox">
+        <h1 class="m-title">Mood & Energy</h1>
+        <p class="m-sub muted">Pick your current vibe ✨</p>
+      </div>
+
+      <button class="mini-save" type="button" (click)="save()" [disabled]="saving" aria-label="Save">
+        {{ saving ? '…' : 'Save' }}
+      </button>
+    </div>
+
+ 
+    <div class="section">
+      <div class="sec-title">
+        <h2>Mood</h2>
+        <span class="chip">{{ moodLabel(selectedMood) }}</span>
+      </div>
+
+      <div class="grid mood-grid">
+        <button type="button" class="tile" [class.active]="selectedMood==='HAPPY'" (click)="selectMood('HAPPY')">
+          <span class="emoji">😊</span><span class="name">Happy</span>
+        </button>
+
+        <button type="button" class="tile" [class.active]="selectedMood==='NEUTRAL'" (click)="selectMood('NEUTRAL')">
+          <span class="emoji">😌</span><span class="name">Normal</span>
+        </button>
+
+        <button type="button" class="tile" [class.active]="selectedMood==='TIRED'" (click)="selectMood('TIRED')">
+          <span class="emoji">🥱</span><span class="name">Tired</span>
+        </button>
+
+        
+      </div>
+    </div>
+
+
+    <div class="section mt16">
+      <div class="sec-title">
+        <h2>Energy</h2>
+        <span class="chip">{{ energyLabel(selectedEnergy) }}</span>
+      </div>
+
+      <div class="grid energy-grid">
+        <button type="button" class="tile energy" [class.active]="selectedEnergy==='LOW'" (click)="selectEnergy('LOW')">
+          <span class="emoji">🟢</span>
+          <span class="name">Low</span>
+          <span class="desc muted">Light tasks</span>
+        </button>
+
+        <button type="button" class="tile energy" [class.active]="selectedEnergy==='MEDIUM'" (click)="selectEnergy('MEDIUM')">
+          <span class="emoji">🟣</span>
+          <span class="name">Medium</span>
+          <span class="desc muted">Balanced</span>
+        </button>
+
+        <button type="button" class="tile energy" [class.active]="selectedEnergy==='HIGH'" (click)="selectEnergy('HIGH')">
+          <span class="emoji">🔵</span>
+          <span class="name">High</span>
+          <span class="desc muted">Deep focus</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="note card mt16">
+      <div class="note-title">✨ Smart tip</div>
+      <div class="note-text muted">
+        Your mood & energy can help sort tasks automatically (High / Medium / Low).
+      </div>
+    </div>
+
+    <p class="err" *ngIf="error">{{ error }}</p>
+  </div>
+
+
+  <div class="toast" *ngIf="toastOpen" aria-live="polite">
+    <div class="t-emoji">{{ toastEmoji }}</div>
+    <div class="t-body">
+      <div class="t-title">Saved ✨</div>
+      <div class="t-text">{{ toastText }}</div>
+
+      <div class="t-actions">
+        <button type="button" class="t-btn" (click)="goHome()">Let’s go</button>
+        <button type="button" class="t-btn ghost" (click)="closeToast()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sparkles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+  </div>
+</div>

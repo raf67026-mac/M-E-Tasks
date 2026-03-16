@@ -1,0 +1,69 @@
+<div class="ep-page">
+  <div class="ep-card" role="region" aria-label="Edit profile">
+    <a class="ep-back" routerLink="/home" aria-label="Back">↩</a>
+
+    <h1 class="ep-title">Edit profile</h1>
+
+    <div class="ep-avatar" aria-hidden="true">
+      <span class="ep-avatar-inner">K</span>
+    </div>
+
+    <form class="ep-form" (ngSubmit)="save()">
+      <label class="ep-field">
+        <span class="ep-label">Name</span>
+        <input class="ep-input" type="text" name="name" [(ngModel)]="name" placeholder="Your name" autocomplete="name" />
+      </label>
+
+      <label class="ep-field">
+        <span class="ep-label">@Username</span>
+        <input class="ep-input" type="text" name="username" [(ngModel)]="username" placeholder="username" autocomplete="username" />
+      </label>
+
+      <label class="ep-field">
+        <span class="ep-label">@Email</span>
+        <input class="ep-input" type="email" name="email" [(ngModel)]="email" placeholder="you@example.com" autocomplete="email" />
+      </label>
+
+      <label class="ep-field">
+        <span class="ep-label">New Password</span>
+      <div class="ep-pass">
+        <input
+          class="ep-input ep-input--pass"
+          [type]="showNewPass ? 'text' : 'password'"
+          name="newPassword"
+          [(ngModel)]="newPassword"
+          placeholder="New password"
+          autocomplete="new-password"
+        />
+        <button type="button" class="eye" (click)="toggleNewPass()" aria-label="Toggle password">
+          {{ showNewPass ? '🙈' : '🙉' }}
+        </button>
+      </div>
+</label>
+
+      <label class="ep-field">
+        <span class="ep-label">Confirm Password</span>
+      <div class="ep-pass">
+        <input
+          class="ep-input ep-input--pass"
+          [type]="showConfirmPass ? 'text' : 'password'"
+          name="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          placeholder="Confirm password"
+          autocomplete="new-password"
+        />
+        <button type="button" class="eye" (click)="toggleConfirmPass()" aria-label="Toggle password">
+          {{ showConfirmPass ? '🙈' : '🙉' }}
+        </button>
+      </div>
+</label>
+
+      <button class="ep-save" type="submit" [disabled]="loading">
+        {{ loading ? 'Saving…' : 'Save' }}
+      </button>
+
+      <p class="ep-err" *ngIf="error && !success">{{ error }}</p>
+      <p class="ep-ok" *ngIf="success">{{ success }}</p>
+    </form>
+  </div>
+</div>

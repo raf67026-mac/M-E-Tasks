@@ -1,0 +1,67 @@
+<div class="scene page page-auth">
+    <div class="auth-wrap card">
+      <div class="auth-head">
+        <div class="brand">
+          <span class="logo">✦</span>
+          <span class="brand-text">Mood-Energy Task</span>
+        </div>
+  
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-sub muted">Log in to continue ✨</p>
+      </div>
+  
+      <form class="auth-form" (ngSubmit)="login()">
+        <div class="field">
+          <label class="label">Email</label>
+          <input
+            class="input"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+        </div>
+  
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="pass">
+            <input
+              class="input"
+              [type]="showPass ? 'text' : 'password'"
+              name="password"
+              [(ngModel)]="password"
+              required
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button type="button" class="eye" (click)="togglePass()" aria-label="Toggle password">
+              {{ showPass ? '🙈' : '🙉' }}
+            </button>
+          </div>
+        </div>
+  
+        <button class="btn btn-primary w100" [disabled]="loading">
+          <span class="btn-glow"></span>
+          {{ loading ? 'Logging in…' : 'Login' }}
+        </button>
+  
+        <p class="err" *ngIf="error">{{ error }}</p>
+  
+        <div class="auth-links">
+          <a class="link" routerLink="/register">Create account</a>
+          <a class="link" routerLink="/forgot-password">Forgot password?</a>
+        </div>
+      </form>
+  
+      <div class="auth-foot muted">
+        Tip: set your mood & energy to get better task suggestions ✨
+      </div>
+    </div>
+  
+    <div class="sparkles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  

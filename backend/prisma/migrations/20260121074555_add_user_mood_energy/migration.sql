@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Mood" AS ENUM ('HAPPY', 'CALM', 'NEUTRAL', 'SAD', 'STRESSED', 'TIRED');
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "mood" "Mood" NOT NULL DEFAULT 'NEUTRAL';
+ALTER TABLE "User" ADD COLUMN     "energy" "Energy" NOT NULL DEFAULT 'MEDIUM';

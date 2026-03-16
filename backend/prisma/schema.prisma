@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  title     String
+  duration  Int
+  energy    Energy
+  status    Status
+  createdAt DateTime @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  password         String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime @default(now())
+
+  // Mood & Energy preferences (used by /mood and shown in UI)
+  mood   Mood   @default(NEUTRAL)
+  energy Energy @default(MEDIUM)
+
+  tasks Task[]
+}
+
+enum Mood {
+  HAPPY
+  CALM
+  NEUTRAL
+  SAD
+  STRESSED
+  TIRED
+}
+
+enum Energy {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
