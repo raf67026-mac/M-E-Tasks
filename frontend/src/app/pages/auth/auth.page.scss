@@ -1,7 +1,22 @@
 .page-auth {
-  --scene-bg: url('/assets/page1.jpeg');
+  // 1. تعريف الألوان ككود بدلاً من رابط الصورة
+  --scene-bg: linear-gradient(180deg, #d0e1f9 0%, #ffffff 40%, #e6e6fa 70%, #b19cd9 100%);
+
+  // 2. تطبيق الخلفية وخصائص الحركة
+  background: var(--scene-bg);
+  background-size: 200% 200%;
+  animation: moveGradient 15s ease infinite;
+  
+  // تأكد من أن الطول يغطي الشاشة كاملة
+  min-height: 100vh; 
 }
 
+// 3. تعريف الحركة (الأنيميشن) في أسفل الملف
+@keyframes moveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
 .auth-wrap {
   width: min(520px, 100%);
