@@ -1,30 +1,46 @@
 .page-auth {
   --scene-bg:
-    /* sky */
-    linear-gradient(to bottom, #e9f1f7 0%, #dfeaf2 40%, #f7f9fb 60%, #ffffff 100%),
+  
+  /* sky */
+  linear-gradient(
+    to bottom,
+    #eaf3f9 0%,
+    #e3eef6 35%,
+    #f6f9fc 55%,
+    #ffffff 70%
+  ),
 
-    /* light rays */
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.4) 0px,
-      rgba(255,255,255,0.4) 40px,
-      rgba(255,255,255,0.0) 80px
-    ),
+  /* light rays */
+  repeating-linear-gradient(
+    95deg,
+    rgba(255,255,255,0.35) 0px,
+    rgba(255,255,255,0.35) 60px,
+    rgba(255,255,255,0.0) 120px
+  ),
 
-    /* forest top shadow */
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.55) 0px,
-      rgba(0,0,0,0.35) 60px,
-      rgba(0,0,0,0.0) 140px
-    ),
+  /* top forest shadow */
+  linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.65) 0px,
+    rgba(0,0,0,0.45) 40px,
+    rgba(0,0,0,0.25) 80px,
+    rgba(0,0,0,0.0) 160px
+  ),
 
-    /* purple flowers bottom */
-    radial-gradient(circle at 10% 95%, #caa7ff 0 40px, transparent 45px),
-    radial-gradient(circle at 30% 97%, #b48cff 0 50px, transparent 55px),
-    radial-gradient(circle at 50% 96%, #d7b8ff 0 45px, transparent 50px),
-    radial-gradient(circle at 70% 97%, #b48cff 0 50px, transparent 55px),
-    radial-gradient(circle at 90% 95%, #caa7ff 0 40px, transparent 45px);
+  /* purple flowers bottom */
+  radial-gradient(circle at 10% 95%, #c7a6ff 0 60px, transparent 65px),
+  radial-gradient(circle at 25% 97%, #b48cff 0 70px, transparent 75px),
+  radial-gradient(circle at 40% 96%, #d7c2ff 0 65px, transparent 70px),
+  radial-gradient(circle at 55% 97%, #b48cff 0 70px, transparent 75px),
+  radial-gradient(circle at 70% 96%, #c7a6ff 0 60px, transparent 65px),
+  radial-gradient(circle at 85% 97%, #b48cff 0 70px, transparent 75px);
+}
+
+.page-auth {
+  background: var(--scene-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-blend-mode: screen, overlay, normal, normal;
 }
 
 
