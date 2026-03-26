@@ -80,14 +80,19 @@ app.post("/auth/forgot-password", async (req, res) => {
 const frontendPath = path.join(__dirname, "..", "frontend", "dist", "browser"); 
 app.use(express.static(frontendPath));
 
-// توجيه أي طلب ليس API إلى صفحة الأنجيولار الرئيسية
-app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-        if (err) {
-            // مسار احتياطي في حال اختلف هيكل المجلدات على Railway
-            res.sendFile(path.join(__dirname, "dist", "index.html"));
-        }
-    });
+// توجيه أي مسار (مثل /auth أو /login) إلى ملف الأنجيولار الرئيسي
+app.get('*', (req, res) => {
+  // التأكد من استثناء روابط الـ API الفعلية
+  if (req.url.startsWith('/auth/') || req.url.startsWith('/tasks')) {
+      return res.status(404).json({ message: "API endpoint not found" });
+  }
+  
+  // إرسال ملف index.html لأي مسار آخر
+  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+      if (err) {
+          res.sendFile(path.join(__dirname, "dist", "index.html"));
+      }
+  });
 });
 
 const PORT = process.env.PORT || 8080;
