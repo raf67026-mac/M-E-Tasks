@@ -80,19 +80,26 @@ app.post("/auth/forgot-password", async (req, res) => {
 const frontendPath = path.join(__dirname, "..", "frontend", "dist", "browser"); 
 app.use(express.static(frontendPath));
 
-// توجيه أي مسار (مثل /auth أو /login) إلى ملف الأنجيولار الرئيسي
+// --- 4. إعدادات الملفات الثابتة (Frontend) ---
+
+const frontendPath = path.join(__dirname, "..", "frontend", "dist", "browser"); 
+app.use(express.static(frontendPath));
+
+// هذا الكود بديل وآمن لتوجيه المسارات دون التسبب في خطأ السيرفر
 app.get('*', (req, res) => {
-  // التأكد من استثناء روابط الـ API الفعلية
-  if (req.url.startsWith('/auth/') || req.url.startsWith('/tasks')) {
-      return res.status(404).json({ message: "API endpoint not found" });
-  }
-  
-  // إرسال ملف index.html لأي مسار آخر
-  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-      if (err) {
-          res.sendFile(path.join(__dirname, "dist", "index.html"));
-      }
-  });
+    // 1. إذا كان الطلب يبدأ بـ /auth، فهذا يعني أن هناك خطأ في طلب الـ API
+    if (req.url.startsWith('/auth')) {
+        return res.status(404).json({ message: "API endpoint not found" });
+    }
+
+    // 2. توجيه أي طلب آخر لملف index.html الخاص بالأنجيولار
+    const indexPath = path.join(frontendPath, "index.html");
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            // مسار احتياطي أخير في حال اختلف الهيكل
+            res.sendFile(path.join(__dirname, "dist", "index.html"));
+        }
+    });
 });
 
 const PORT = process.env.PORT || 8080;
