@@ -1,21 +1,22 @@
 .page-auth {
-  // 1. تعريف الألوان ككود بدلاً من رابط الصورة
-  --scene-bg: linear-gradient(180deg, #d0e1f9 0%, #ffffff 40%, #e6e6fa 70%, #b19cd9 100%);
+  // تدرج لوني معقد يحاكي السماء والحقل والألوان الوردية
+  --scene-bg: 
+    radial-gradient(circle at 20% 80%, rgba(230, 230, 250, 0.8) 0%, transparent 40%), // بقعة ضوء أرجوانية يسار
+    radial-gradient(circle at 80% 90%, rgba(177, 156, 217, 0.6) 0%, transparent 50%), // بقعة ضوء أرجوانية يمين
+    linear-gradient(180deg, 
+      #D0E1F9 0%,    // سماء زرقاء فاتحة
+      #FFE4E1 30%,   // لمسة وردية (الغيوم)
+      #FFFFFF 50%,   // أبيض (الأفق)
+      #E6E6FA 70%,   // بداية الحقل
+      #D8BFD8 100%   // عمق الحقل من الأسفل
+    );
 
-  // 2. تطبيق الخلفية وخصائص الحركة
   background: var(--scene-bg);
-  background-size: 200% 200%;
-  animation: moveGradient 15s ease infinite;
-  
-  // تأكد من أن الطول يغطي الشاشة كاملة
-  min-height: 100vh; 
-}
-
-// 3. تعريف الحركة (الأنيميشن) في أسفل الملف
-@keyframes moveGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  background-size: 100% 100%; // هنا لا نحتاج تكبير الحجم إلا إذا فعلنا الأنيميشن
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-wrap {
