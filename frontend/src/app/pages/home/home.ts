@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
+
 type Energy = 'LOW' | 'MEDIUM' | 'HIGH';
 // Backend mood can be "NEUTRAL". In the UI we show it as "Normal".
 // We also support legacy values ("normal" / "sad") and map them to "neutral".
