@@ -72,21 +72,6 @@ async function forgotHandler(req, res) {
 }
 app.post("/auth/forgot-password", forgotHandler);
 
-// --- إعدادات الاستضافة النهائية ---
-
-// تحديد المسار بشكل مطلق لضمان الدقة
-const frontendPath = path.join(__dirname, "dist"); 
-app.use(express.static(frontendPath));
-
-app.get(/^(?!\/(auth|tasks|users|ai|mood)).*$/, (req, res) => {
-    // حاول إرسال الملف، وإذا فشل سيطبع لك المسار الحقيقي في الـ Logs
-    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-        if (err) {
-            console.error("FRONTEND_ERROR: Looked for index.html at", path.join(frontendPath, "index.html"));
-            res.status(500).send("Frontend files missing. Check Dockerfile COPY command.");
-        }
-    });
-});
 
 // 3. تشغيل السيرفر
 const PORT = process.env.PORT || 8080;
