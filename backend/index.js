@@ -160,31 +160,33 @@ app.get("/tasks", authRequired, async (req, res) => {
 
 // ➕ CREATE TASK (🔥 FIXED)
 app.post("/tasks", authRequired, async (req, res) => {
-  try {
-    console.log("BODY:", req.body);
-
-    const { title, duration, energy } = req.body;
-
-    if (!title || !duration || !energy) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
-
-    const task = await prisma.task.create({
-      data: {
-        title: String(title),
-        duration: Number(duration),
-        energy: String(energy),
-        userId: req.user.id,
-      },
-    });
-
-    res.json(task);
-
-  } catch (err) {
-    console.error("CREATE TASK ERROR:", err);
-    res.status(500).json({ message: err.message });
-  }
-});
+    try {
+      console.log("BODY:", req.body);
+  
+      const title = req.body.title;
+      const duration = req.body.duration || req.body.durationMinutes;
+      const energy = req.body.energy || req.body.energyLevel;
+  
+      if (!title || !duration || !energy) {
+        return res.status(400).json({ message: "Missing fields" });
+      }
+  
+      const task = await prisma.task.create({
+        data: {
+          title: String(title),
+          duration: Number(duration),
+          energy: String(energy),
+          userId: req.user.id,
+        },
+      });
+  
+      res.json(task);
+  
+    } catch (err) {
+      console.error("CREATE TASK ERROR:", err);
+      res.status(500).json({ message: err.message });
+    }
+  });
 
 // ===================================================
 // 🚀 RUN
