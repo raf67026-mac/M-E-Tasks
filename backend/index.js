@@ -185,25 +185,31 @@ app.get("/users/me", authRequired, async (req, res) => {
   });
 
   // ➕ CREATE TASK
-app.post("/tasks", authRequired, async (req, res) => {
-    try {
+  app.post("/tasks", authRequired, async (req, res) => {
+      try {
+        console.log("BODY:", req.body);
+    
         const { title, durationMinutes, energyLevel } = req.body;
-  
-       const task = await prisma.task.create({
-        data: {
-          title,
-          duration: Number(durationMinutes),
-          energy: energyLevel,
-          userId: req.user.id,
-        },
-      });
-  
-      res.json(task);
-    } catch (err) {
-      console.error("CREATE TASK ERROR:", err);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+    
+        if (!title || !durationMinutes || !energyLevel) {
+          return res.status(400).json({ message: "Missing fields" });
+        }
+    
+        const task = await prisma.task.create({
+          data: {
+            title: String(title),
+            duration: Number(durationMinutes), // 🔥 مهم
+            energy: String(energyLevel),
+            userId: req.user.id,
+          },
+        });
+    
+        res.json(task);
+      } catch (err) {
+        console.error("CREATE TASK ERROR:", err);
+        res.status(500).json({ message: err.message });
+      }
+    });
 // ===================================================
 // 🚀 RUN SERVER
 // ===================================================
