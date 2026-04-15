@@ -12,7 +12,7 @@ model Task {
   title     String
   duration  Int
   energy    Energy
-  status    Status
+  status    Status   @default(PENDING)  // 👈 هذا الحل الصح
   createdAt DateTime @default(now())
 
   userId Int

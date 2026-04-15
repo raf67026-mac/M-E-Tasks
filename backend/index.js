@@ -11,24 +11,21 @@ const prisma = new PrismaClient();
 
 // --- 1. الإعدادات الأساسية ---
 const corsOrigin = process.env.CORS_ORIGIN;
-app.use(cors(corsOrigin
-  ? {
-      origin: corsOrigin.split(",").map(s => s.trim()).filter(Boolean),
-      credentials: true
-    }
-  : { origin: "*" }
+
+app.use(cors(
+  corsOrigin
+    ? {
+        origin: corsOrigin.split(",").map(s => s.trim()).filter(Boolean),
+        credentials: true,
+      }
+    : { origin: "*" }
 ));
 
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
-// --- 2. Helpers ---
-function hashToken(token) {
-  return crypto.createHash("sha256").update(String(token)).digest("hex");
-}
-
-// --- 3. Middleware ---
+// --- 2. Middleware ---
 function authRequired(req, res, next) {
   try {
     const header = req.headers.authorization || "";
@@ -61,7 +58,7 @@ app.post("/auth/register", async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail }
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -73,12 +70,11 @@ app.post("/auth/register", async (req, res) => {
     await prisma.user.create({
       data: {
         email: normalizedEmail,
-        password: hashedPassword
-      }
+        password: hashedPassword,
+      },
     });
 
     res.json({ message: "User created successfully" });
-
   } catch (err) {
     console.error("REGISTER_ERROR:", err);
     res.status(500).json({ message: "Server error" });
@@ -96,7 +92,7 @@ app.post("/auth/login", async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail }
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -116,7 +112,6 @@ app.post("/auth/login", async (req, res) => {
     );
 
     res.json({ token });
-
   } catch (err) {
     console.error("LOGIN_ERROR:", err);
     res.status(500).json({ message: "Server error" });
@@ -131,7 +126,7 @@ app.get("/users/me", authRequired, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      include: { tasks: true }
+      include: { tasks: true },
     });
 
     res.json(user);
@@ -148,7 +143,7 @@ app.get("/users/me", authRequired, async (req, res) => {
 app.get("/tasks", authRequired, async (req, res) => {
   try {
     const tasks = await prisma.task.findMany({
-      where: { userId: req.user.id }
+      where: { userId: req.user.id },
     });
 
     res.json(tasks);
@@ -158,46 +153,51 @@ app.get("/tasks", authRequired, async (req, res) => {
   }
 });
 
-// ➕ CREATE TASK (🔥 FIXED)
+// ➕ CREATE TASK (🔥 FINAL FIX)
 app.post("/tasks", authRequired, async (req, res) => {
-    try {
-      console.log("USER:", req.user);
-      console.log("BODY:", req.body);
-  
-      if (!req.user || !req.user.id) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-  
-      const title = req.body.title;
-      const duration = req.body.duration || req.body.durationMinutes;
-      const energy = req.body.energy || req.body.energyLevel;
-  
-      if (!title || !duration || !energy) {
-        return res.status(400).json({ message: "Missing fields" });
-      }
-  
-      const parsedDuration = Number(duration);
-  
-      if (isNaN(parsedDuration)) {
-        return res.status(400).json({ message: "Invalid duration" });
-      }
-  
-      const task = await prisma.task.create({
-        data: {
-          title: String(title),
-          duration: parsedDuration,
-          energy: String(energy),
-          userId: req.user.id,
-        },
-      });
-  
-      res.status(201).json(task);
-  
-    } catch (err) {
-      console.error("🔥 CREATE TASK ERROR FULL:", err);
-      res.status(500).json({ message: err.message });
-    }
-  });
+  try {
+    console.log("BODY:", req.body);
+
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const title = req.body.title;
+    const durationRaw = req.body.duration || req.body.durationMinutes;
+    const energyRaw = req.body.energy || req.body.energyLevel;
+
+    if (!title || !durationRaw || !energyRaw) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    const duration = Number(durationRaw);
+    if (isNaN(duration)) {
+      return res.status(400).json({ message: "Invalid duration" });
+    }
+
+    const allowedEnergy = ["LOW", "MEDIUM", "HIGH"];
+    const energy = String(energyRaw).toUpperCase();
+
+    if (!allowedEnergy.includes(energy)) {
+      return res.status(400).json({ message: "Invalid energy" });
+    }
+
+    const task = await prisma.task.create({
+      data: {
+        title: String(title),
+        duration,
+        energy,
+        status: "PENDING", // 🔥 الحل النهائي
+        userId: req.user.id,
+      },
+    });
+
+    res.status(201).json(task);
+  } catch (err) {
+    console.error("CREATE TASK ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // ===================================================
 // 🚀 RUN
