@@ -183,6 +183,27 @@ app.get("/users/me", authRequired, async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   });
+
+  // ➕ CREATE TASK
+app.post("/tasks", authRequired, async (req, res) => {
+    try {
+      const { title, duration, energy } = req.body;
+  
+      const task = await prisma.task.create({
+        data: {
+          title,
+          duration,
+          energy,
+          userId: req.user.id,
+        },
+      });
+  
+      res.json(task);
+    } catch (err) {
+      console.error("CREATE TASK ERROR:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 // ===================================================
 // 🚀 RUN SERVER
 // ===================================================
