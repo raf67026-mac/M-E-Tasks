@@ -187,16 +187,16 @@ app.get("/users/me", authRequired, async (req, res) => {
   // ➕ CREATE TASK
 app.post("/tasks", authRequired, async (req, res) => {
     try {
-      const { title, duration, energy } = req.body;
+        const { title, durationMinutes, energyLevel } = req.body;
   
-      const task = await prisma.task.create({
-        data: {
-          title,
-          duration,
-          energy,
-          userId: req.user.id,
-        },
-      });
+       const task = await prisma.task.create({
+        data: {
+          title,
+          duration: Number(durationMinutes),
+          energy: energyLevel,
+          userId: req.user.id,
+        },
+      });
   
       res.json(task);
     } catch (err) {
