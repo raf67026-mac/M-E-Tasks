@@ -161,7 +161,12 @@ app.get("/tasks", authRequired, async (req, res) => {
 // ➕ CREATE TASK (🔥 FIXED)
 app.post("/tasks", authRequired, async (req, res) => {
     try {
+      console.log("USER:", req.user);
       console.log("BODY:", req.body);
+  
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
   
       const title = req.body.title;
       const duration = req.body.duration || req.body.durationMinutes;
@@ -171,19 +176,25 @@ app.post("/tasks", authRequired, async (req, res) => {
         return res.status(400).json({ message: "Missing fields" });
       }
   
+      const parsedDuration = Number(duration);
+  
+      if (isNaN(parsedDuration)) {
+        return res.status(400).json({ message: "Invalid duration" });
+      }
+  
       const task = await prisma.task.create({
         data: {
           title: String(title),
-          duration: Number(duration),
+          duration: parsedDuration,
           energy: String(energy),
           userId: req.user.id,
         },
       });
   
-      res.json(task);
+      res.status(201).json(task);
   
     } catch (err) {
-      console.error("CREATE TASK ERROR:", err);
+      console.error("🔥 CREATE TASK ERROR FULL:", err);
       res.status(500).json({ message: err.message });
     }
   });
