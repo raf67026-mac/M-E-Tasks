@@ -189,20 +189,20 @@ app.get("/users/me", authRequired, async (req, res) => {
       try {
         console.log("BODY:", req.body);
     
-        const { title, durationMinutes, energyLevel } = req.body;
+        const { title, duration, energy } = req.body;
     
         if (!title || !durationMinutes || !energyLevel) {
           return res.status(400).json({ message: "Missing fields" });
         }
     
-        const task = await prisma.task.create({
-          data: {
-            title: String(title),
-            duration: Number(durationMinutes), // 🔥 مهم
-            energy: String(energyLevel),
-            userId: req.user.id,
-          },
-        });
+       const task = await prisma.task.create({
+        data: {
+          title: String(title),
+          duration: Number(duration),
+          energy: String(energy),
+          userId: req.user.id,
+        },
+      });
     
         res.json(task);
       } catch (err) {
