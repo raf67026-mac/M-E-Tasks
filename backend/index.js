@@ -151,7 +151,38 @@ app.post("/auth/forgot-password", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
+// ==============================
+// 👤 USER INFO
+// ==============================
+app.get("/users/me", authRequired, async (req, res) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: { tasks: true }
+      });
+  
+      res.json(user);
+    } catch (err) {
+      console.error("USER ERROR:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  // ==============================
+  // 📋 TASKS
+  // ==============================
+  app.get("/tasks", authRequired, async (req, res) => {
+    try {
+      const tasks = await prisma.task.findMany({
+        where: { userId: req.user.id }
+      });
+  
+      res.json(tasks);
+    } catch (err) {
+      console.error("TASKS ERROR:", err);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 // ===================================================
 // 🚀 RUN SERVER
 // ===================================================
