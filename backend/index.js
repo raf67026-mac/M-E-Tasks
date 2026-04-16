@@ -199,6 +199,29 @@ app.post("/tasks", authRequired, async (req, res) => {
   }
 });
 
+// 🔄 UPDATE TASK STATUS
+app.patch("/tasks/:id", authRequired, async (req, res) => {
+      try {
+        const taskId = Number(req.params.id);
+        const { status } = req.body;
+    
+        const allowedStatus = ["PENDING", "IN_PROGRESS", "COMPLETED"];
+    
+        if (!allowedStatus.includes(status)) {
+          return res.status(400).json({ message: "Invalid status" });
+        }
+    
+        const task = await prisma.task.update({
+          where: { id: taskId },
+          data: { status },
+        });
+    
+        res.json(task);
+      } catch (err) {
+        console.error("UPDATE TASK ERROR:", err);
+        res.status(500).json({ message: err.message });
+      }
+    });
 // ===================================================
 // 🚀 RUN
 // ===================================================
