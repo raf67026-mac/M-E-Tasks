@@ -117,6 +117,97 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
+// 🔐 FORGOT PASSWORD
+app.post("/auth/forgot-password", async (req, res) => {
+      try {
+        const { email } = req.body;
+    
+        if (!email) {
+          return res.status(400).json({ message: "Email is required" });
+        }
+    
+        const user = await prisma.user.findUnique({
+          where: { email: email.toLowerCase().trim() },
+        });
+    
+        if (!user) {
+          // لا تعطي تفاصيل (أمان)
+          return res.json({ message: "If email exists, reset link sent" });
+        }
+    
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const hashedToken = crypto
+          .createHash("sha256")
+          .update(resetToken)
+          .digest("hex");
+    
+        const expiry = new Date(Date.now() + 1000 * 60 * 15); // 15 min
+    
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            resetToken: hashedToken,
+            resetTokenExpiry: expiry,
+          },
+        });
+    
+        // ⚠️ مؤقتًا: نطبع الرابط بدل إرسال إيميل
+        console.log("RESET LINK:");
+        console.log(`https://m-e-tasks.vercel.app/reset-password?token=${resetToken}`);
+    
+        res.json({ message: "Reset link generated (check server logs)" });
+    
+      } catch (err) {
+        console.error("FORGOT PASSWORD ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/auth/reset-password", async (req, res) => {
+          try {
+            const { token, password } = req.body;
+        
+            if (!token || !password) {
+              return res.status(400).json({ message: "Missing data" });
+            }
+        
+            const hashedToken = crypto
+              .createHash("sha256")
+              .update(token)
+              .digest("hex");
+        
+            const user = await prisma.user.findFirst({
+              where: {
+                resetToken: hashedToken,
+                resetTokenExpiry: {
+                  gte: new Date(),
+                },
+              },
+            });
+        
+            if (!user) {
+              return res.status(400).json({ message: "Invalid or expired token" });
+            }
+        
+            const hashedPassword = await bcrypt.hash(password, 10);
+        
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+              },
+            });
+        
+            res.json({ message: "Password reset successful" });
+        
+          } catch (err) {
+            console.error("RESET PASSWORD ERROR:", err);
+            res.status(500).json({ message: "Server error" });
+          }
+        });
+
 // ===================================================
 // 👤 USER
 // ===================================================
