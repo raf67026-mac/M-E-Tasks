@@ -104,7 +104,7 @@ save(): void {
 
     this.loading = true;
 
-    this.api.post<any>('/users/me', payload, { auth: true }).subscribe({
+    this.api.patch<any>('/users/me', payload, { auth: true }).subscribe({
       next: () => {
         setTimeout(() => {
           this.loading = false;
