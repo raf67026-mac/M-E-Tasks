@@ -106,7 +106,7 @@ export class MoodPage implements OnInit {
       energy: this.selectedEnergy.toUpperCase() // e.g., "MEDIUM"
     };
 
-    this.api.post<any>('/users/me', body, { auth: true }).subscribe({
+    this.api.patch('/users/me', body, { auth: true }).subscribe({
       next: () => {
         setTimeout(() => {
           this.saving = false;
