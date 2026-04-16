@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
@@ -25,7 +24,7 @@ app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
-// --- 2. Middleware ---
+// --- Middleware ---
 function authRequired(req, res, next) {
   try {
     const header = req.headers.authorization || "";
@@ -122,52 +121,67 @@ app.post("/auth/login", async (req, res) => {
 // 👤 USER
 // ===================================================
 
-// 👤 USER
-
+// GET USER
 app.get("/users/me", authRequired, async (req, res) => {
-      try {
-        const user = await prisma.user.findUnique({
-          where: { id: req.user.id },
-          include: { tasks: true },
-        });
-    
-        res.json(user);
-      } catch (err) {
-        console.error("USER ERROR:", err);
-        res.status(500).json({ message: "Server error" });
-      }
-    });
-    
-    // 🔄 UPDATE MOOD & ENERGY
-    app.patch("/users/me", authRequired, async (req, res) => {
-      try {
-        const { mood, energy } = req.body;
-    
-        const allowedMood = ["HAPPY", "CALM", "NEUTRAL", "SAD", "STRESSED", "TIRED"];
-        const allowedEnergy = ["LOW", "MEDIUM", "HIGH"];
-    
-        if (mood && !allowedMood.includes(mood)) {
-          return res.status(400).json({ message: "Invalid mood" });
-        }
-    
-        if (energy && !allowedEnergy.includes(energy)) {
-          return res.status(400).json({ message: "Invalid energy" });
-        }
-    
-        const updatedUser = await prisma.user.update({
-          where: { id: req.user.id },
-          data: {
-            ...(mood && { mood }),
-            ...(energy && { energy }),
-          },
-        });
-    
-        res.json(updatedUser);
-      } catch (err) {
-        console.error("UPDATE USER ERROR:", err);
-        res.status(500).json({ message: err.message });
-      }
-    });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { tasks: true },
+    });
+
+    res.json(user);
+  } catch (err) {
+    console.error("USER ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// 🔥 UPDATE EVERYTHING (MOOD + ENERGY + PROFILE)
+app.patch("/users/me", authRequired, async (req, res) => {
+  try {
+    const { mood, energy, email, password } = req.body;
+
+    const data = {};
+
+    // mood
+    if (mood) {
+      const allowedMood = ["HAPPY", "CALM", "NEUTRAL", "SAD", "STRESSED", "TIRED"];
+      if (!allowedMood.includes(mood)) {
+        return res.status(400).json({ message: "Invalid mood" });
+      }
+      data.mood = mood;
+    }
+
+    // energy
+    if (energy) {
+      const allowedEnergy = ["LOW", "MEDIUM", "HIGH"];
+      if (!allowedEnergy.includes(energy)) {
+        return res.status(400).json({ message: "Invalid energy" });
+      }
+      data.energy = energy;
+    }
+
+    // email
+    if (email) {
+      data.email = email.toLowerCase().trim();
+    }
+
+    // password
+    if (password) {
+      data.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data,
+    });
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error("UPDATE USER ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // ===================================================
 // 📋 TASKS
@@ -186,11 +200,8 @@ app.get("/tasks", authRequired, async (req, res) => {
   }
 });
 
-// ➕ CREATE TASK (🔥 FINAL FIX)
 app.post("/tasks", authRequired, async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-
     if (!req.user?.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -220,7 +231,7 @@ app.post("/tasks", authRequired, async (req, res) => {
         title: String(title),
         duration,
         energy,
-        status: "PENDING", // 🔥 الحل النهائي
+        status: "PENDING",
         userId: req.user.id,
       },
     });
@@ -232,29 +243,29 @@ app.post("/tasks", authRequired, async (req, res) => {
   }
 });
 
-// 🔄 UPDATE TASK STATUS
 app.patch("/tasks/:id", authRequired, async (req, res) => {
-      try {
-        const taskId = Number(req.params.id);
-        const { status } = req.body;
-    
-        const allowedStatus = ["PENDING", "IN_PROGRESS", "COMPLETED"];
-    
-        if (!allowedStatus.includes(status)) {
-          return res.status(400).json({ message: "Invalid status" });
-        }
-    
-        const task = await prisma.task.update({
-          where: { id: taskId },
-          data: { status },
-        });
-    
-        res.json(task);
-      } catch (err) {
-        console.error("UPDATE TASK ERROR:", err);
-        res.status(500).json({ message: err.message });
-      }
-    });
+  try {
+    const taskId = Number(req.params.id);
+    const { status } = req.body;
+
+    const allowedStatus = ["PENDING", "IN_PROGRESS", "COMPLETED"];
+
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const task = await prisma.task.update({
+      where: { id: taskId },
+      data: { status },
+    });
+
+    res.json(task);
+  } catch (err) {
+    console.error("UPDATE TASK ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // ===================================================
 // 🚀 RUN
 // ===================================================
