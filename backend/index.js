@@ -122,19 +122,52 @@ app.post("/auth/login", async (req, res) => {
 // 👤 USER
 // ===================================================
 
-app.get("/users/me", authRequired, async (req, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      include: { tasks: true },
-    });
+// 👤 USER
 
-    res.json(user);
-  } catch (err) {
-    console.error("USER ERROR:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+app.get("/users/me", authRequired, async (req, res) => {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: req.user.id },
+          include: { tasks: true },
+        });
+    
+        res.json(user);
+      } catch (err) {
+        console.error("USER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    // 🔄 UPDATE MOOD & ENERGY
+    app.patch("/users/me", authRequired, async (req, res) => {
+      try {
+        const { mood, energy } = req.body;
+    
+        const allowedMood = ["HAPPY", "CALM", "NEUTRAL", "SAD", "STRESSED", "TIRED"];
+        const allowedEnergy = ["LOW", "MEDIUM", "HIGH"];
+    
+        if (mood && !allowedMood.includes(mood)) {
+          return res.status(400).json({ message: "Invalid mood" });
+        }
+    
+        if (energy && !allowedEnergy.includes(energy)) {
+          return res.status(400).json({ message: "Invalid energy" });
+        }
+    
+        const updatedUser = await prisma.user.update({
+          where: { id: req.user.id },
+          data: {
+            ...(mood && { mood }),
+            ...(energy && { energy }),
+          },
+        });
+    
+        res.json(updatedUser);
+      } catch (err) {
+        console.error("UPDATE USER ERROR:", err);
+        res.status(500).json({ message: err.message });
+      }
+    });
 
 // ===================================================
 // 📋 TASKS
