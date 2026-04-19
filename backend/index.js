@@ -176,10 +176,10 @@ app.post("/auth/forgot-password", async (req, res) => {
 
     res.json({ message: "Email sent ✅" });
 
-  } catch (err) {
-    console.error("FORGOT PASSWORD ERROR:", err);
-    res.status(500).json({ message: err.message });
-  }
+ } catch (err) {
+    console.error("🔥 FULL ERROR:", err); // هذا مهم
+    res.status(500).json({ message: err.message });
+  }
 });
 
 // 🔐 RESET PASSWORD
