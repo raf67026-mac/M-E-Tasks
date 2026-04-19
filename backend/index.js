@@ -12,12 +12,14 @@ const prisma = new PrismaClient();
 
 // ✅ EMAIL SETUP (ثابت وصحيح)
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
 // --- CORS ---
 const corsOrigin = process.env.CORS_ORIGIN;
