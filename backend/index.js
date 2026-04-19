@@ -144,7 +144,7 @@ app.post("/tasks", auth, async (req, res) => {
       }
     });
 
-app.put("/tasks/:id", auth, async (req, res) => {
+    app.patch("/tasks/:id", auth, async (req, res) => {
   const { id } = req.params;
   const { completed } = req.body;
 
