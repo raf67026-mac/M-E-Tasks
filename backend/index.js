@@ -89,6 +89,29 @@ app.get("/users/me", auth, async (req, res) => {
   res.json(user);
 });
 
+app.patch("/users/me", auth, async (req, res) => {
+      try {
+        const { mood, energy } = req.body;
+    
+        if (!mood || !energy) {
+          return res.status(400).json({ message: "Missing mood or energy" });
+        }
+    
+        const user = await prisma.user.update({
+          where: { id: req.user.id },
+          data: {
+            mood,
+            energy,
+          },
+        });
+    
+        res.json(user);
+      } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: "Error updating user" });
+      }
+    });
+
 // ================== TASKS ==================
 app.get("/tasks", auth, async (req, res) => {
   const tasks = await prisma.task.findMany({
