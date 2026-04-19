@@ -91,18 +91,28 @@ app.get("/users/me", auth, async (req, res) => {
 
 app.patch("/users/me", auth, async (req, res) => {
       try {
-        const { mood, energy } = req.body;
+        const { name, username, email, password, mood, energy } = req.body;
     
-        if (!mood || !energy) {
-          return res.status(400).json({ message: "Missing mood or energy" });
+        const data = {};
+    
+        // profile fields
+        if (name !== undefined) data.name = name;
+        if (username !== undefined) data.username = username;
+        if (email !== undefined) data.email = email;
+    
+        // password (hash)
+        if (password) {
+          const hash = await bcrypt.hash(password, 10);
+          data.password = hash;
         }
+    
+        // mood & energy
+        if (mood !== undefined) data.mood = mood;
+        if (energy !== undefined) data.energy = energy;
     
         const user = await prisma.user.update({
           where: { id: req.user.id },
-          data: {
-            mood,
-            energy,
-          },
+          data,
         });
     
         res.json(user);
