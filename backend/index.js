@@ -98,18 +98,28 @@ app.get("/tasks", auth, async (req, res) => {
 });
 
 app.post("/tasks", auth, async (req, res) => {
-  const { title } = req.body;
-
-  const task = await prisma.task.create({
-    data: {
-      title,
-      completed: false,
-      userId: req.user.id,
-    },
-  });
-
-  res.json(task);
-});
+      try {
+        const { title, durationMinutes, energyLevel } = req.body;
+    
+        if (!title || !durationMinutes || !energyLevel) {
+          return res.status(400).json({ message: "Missing fields" });
+        }
+    
+        const task = await prisma.task.create({
+          data: {
+            title,
+            duration: durationMinutes,
+            energy: energyLevel,
+            userId: req.user.id,
+          },
+        });
+    
+        res.json(task);
+      } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: "Error creating task" });
+      }
+    });
 
 app.put("/tasks/:id", auth, async (req, res) => {
   const { id } = req.params;
