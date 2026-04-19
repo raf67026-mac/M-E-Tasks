@@ -3,32 +3,35 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto"); // 🔥 مهم
+const crypto = require("crypto");
 const { PrismaClient } = require("@prisma/client");
 const nodemailer = require("nodemailer");
 
 const app = express();
 const prisma = new PrismaClient();
 
+// ✅ EMAIL SETUP (ثابت وصحيح)
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 // --- CORS ---
 const corsOrigin = process.env.CORS_ORIGIN;
 
-app.use(cors(
-  corsOrigin
-    ? {
-        origin: corsOrigin.split(",").map(s => s.trim()).filter(Boolean),
-        credentials: true,
-      }
-    : { origin: "*" }
-));
+app.use(
+  cors(
+    corsOrigin
+      ? {
+          origin: corsOrigin.split(",").map((s) => s.trim()).filter(Boolean),
+          credentials: true,
+        }
+      : { origin: "*" }
+  )
+);
 
 app.use(express.json());
 
@@ -127,7 +130,10 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
-// 🔐 FORGOT PASSWORD (🔥 FIXED)
+// ===================================================
+// 🔐 FORGOT PASSWORD
+// ===================================================
+
 app.post("/auth/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -163,8 +169,9 @@ app.post("/auth/forgot-password", async (req, res) => {
 
     const resetLink = `https://m-e-tasks.vercel.app/reset-password?token=${resetToken}`;
 
+    // 🔥 أهم نقطة: تأكد الإيميل ينرسل
     await transporter.sendMail({
-          from: `"M-E Tasks" <${process.env.SMTP_USER}>`,
+      from: `"M-E Tasks" <${process.env.SMTP_USER}>`,
       to: user.email,
       subject: "Reset your password",
       html: `
@@ -176,13 +183,16 @@ app.post("/auth/forgot-password", async (req, res) => {
 
     res.json({ message: "Email sent ✅" });
 
- } catch (err) {
-    console.error("🔥 FULL ERROR:", err); // هذا مهم
-    res.status(500).json({ message: err.message });
-  }
+  } catch (err) {
+    console.error("🔥 FULL ERROR:", err); // مهم جدًا
+    res.status(500).json({ message: err.message });
+  }
 });
 
+// ===================================================
 // 🔐 RESET PASSWORD
+// ===================================================
+
 app.post("/auth/reset-password", async (req, res) => {
   try {
     const { token, password } = req.body;
