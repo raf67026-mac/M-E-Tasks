@@ -1,240 +1,144 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto"); // 🔥 مهم
 const { PrismaClient } = require("@prisma/client");
-const nodemailer = require("nodemailer");
 
 const app = express();
 const prisma = new PrismaClient();
 
-// --- EMAIL SETUP ---
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// --- CORS ---
-const corsOrigin = process.env.CORS_ORIGIN;
-
-app.use(cors(
-  corsOrigin
-    ? {
-        origin: corsOrigin.split(",").map(s => s.trim()).filter(Boolean),
-        credentials: true,
-      }
-    : { origin: "*" }
-));
-
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
-// --- Middleware ---
-function authRequired(req, res, next) {
-  try {
-    const header = req.headers.authorization || "";
-    const [type, token] = header.split(" ");
-
-    if (type !== "Bearer" || !token) {
-      return res.status(401).json({ message: "Missing auth token" });
-    }
-
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload;
-    next();
-  } catch {
-    return res.status(401).json({ message: "Invalid or expired token" });
-  }
-}
-
-// ===================================================
-// 🔥 AUTH
-// ===================================================
-
+// ================== AUTH ==================
 app.post("/auth/register", async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email & password required" });
-    }
+    if (!email || !password)
+      return res.status(400).json({ message: "Missing data" });
 
-    const normalizedEmail = email.toLowerCase().trim();
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+    const exists = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (exists)
+      return res.status(400).json({ message: "User exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 10);
 
     await prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        password: hashedPassword,
-      },
+      data: { email, password: hash },
     });
 
-    res.json({ message: "User created successfully" });
-  } catch (err) {
-    console.error("REGISTER_ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.json({ message: "Created" });
+  } catch (e) {
+    res.status(500).json({ message: "Error" });
   }
 });
 
 app.post("/auth/login", async (req, res) => {
   try {
-    const { email, password } = req.body || {};
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email & password required" });
-    }
-
-    const normalizedEmail = email.toLowerCase().trim();
+    const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+      where: { email },
     });
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!user)
+      return res.status(400).json({ message: "Invalid" });
 
-    const isValid = await bcrypt.compare(password, user.password);
+    const ok = await bcrypt.compare(password, user.password);
 
-    if (!isValid) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!ok)
+      return res.status(400).json({ message: "Invalid" });
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: "7d" }
+      JWT_SECRET
     );
 
     res.json({ token });
-  } catch (err) {
-    console.error("LOGIN_ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+  } catch {
+    res.status(500).json({ message: "Error" });
   }
 });
 
-// 🔐 FORGOT PASSWORD (🔥 FIXED)
-app.post("/auth/forgot-password", async (req, res) => {
+// ================== MIDDLEWARE ==================
+function auth(req, res, next) {
   try {
-    const { email } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token" });
 
-    if (!email) {
-      return res.status(400).json({ message: "Email required" });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
-
-    if (!user) {
-      return res.json({ message: "If email exists, reset sent" });
-    }
-
-    const resetToken = crypto.randomBytes(32).toString("hex");
-
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-
-    const expiry = new Date(Date.now() + 1000 * 60 * 15);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetToken: hashedToken,
-        resetTokenExpiry: expiry,
-      },
-    });
-
-    const resetLink = `https://m-e-tasks.vercel.app/reset-password?token=${resetToken}`;
-
-    await transporter.sendMail({
-      from: `"M-E Tasks" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-      subject: "Reset your password",
-      html: `
-        <h2>Reset Password</h2>
-        <p>Click this link:</p>
-        <a href="${resetLink}">${resetLink}</a>
-      `,
-    });
-
-    res.json({ message: "Email sent ✅" });
-
-  } catch (err) {
-    console.error("FORGOT PASSWORD ERROR:", err);
-    res.status(500).json({ message: err.message });
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ message: "Invalid token" });
   }
+}
+
+// ================== USER ==================
+app.get("/users/me", auth, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+  });
+  res.json(user);
 });
 
-// 🔐 RESET PASSWORD
-app.post("/auth/reset-password", async (req, res) => {
-  try {
-    const { token, password } = req.body;
-
-    if (!token || !password) {
-      return res.status(400).json({ message: "Missing data" });
-    }
-
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: hashedToken,
-        resetTokenExpiry: {
-          gte: new Date(),
-        },
-      },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        resetToken: null,
-        resetTokenExpiry: null,
-      },
-    });
-
-    res.json({ message: "Password reset successful" });
-
-  } catch (err) {
-    console.error("RESET PASSWORD ERROR:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+// ================== TASKS ==================
+app.get("/tasks", auth, async (req, res) => {
+  const tasks = await prisma.task.findMany({
+    where: { userId: req.user.id },
+  });
+  res.json(tasks);
 });
 
-// ===================================================
-// 🚀 RUN
-// ===================================================
+app.post("/tasks", auth, async (req, res) => {
+  const { title } = req.body;
 
+  const task = await prisma.task.create({
+    data: {
+      title,
+      completed: false,
+      userId: req.user.id,
+    },
+  });
+
+  res.json(task);
+});
+
+app.put("/tasks/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  const { completed } = req.body;
+
+  const task = await prisma.task.update({
+    where: { id: Number(id) },
+    data: { completed },
+  });
+
+  res.json(task);
+});
+
+app.delete("/tasks/:id", auth, async (req, res) => {
+  await prisma.task.delete({
+    where: { id: Number(req.params.id) },
+  });
+
+  res.json({ message: "Deleted" });
+});
+
+// ================== MOOD ==================
+app.get("/mood", auth, (req, res) => {
+  res.json({ mood: "Tired", energy: "Low" });
+});
+
+// ================== RUN ==================
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("🚀 running on " + PORT);
 });
