@@ -95,20 +95,16 @@ app.patch("/users/me", auth, async (req, res) => {
     
         const data = {};
     
-        // profile fields
         if (name !== undefined) data.name = name;
         if (username !== undefined) data.username = username;
         if (email !== undefined) data.email = email;
+        if (mood !== undefined) data.mood = mood;
+        if (energy !== undefined) data.energy = energy;
     
-        // password (hash)
         if (password) {
           const hash = await bcrypt.hash(password, 10);
           data.password = hash;
         }
-    
-        // mood & energy
-        if (mood !== undefined) data.mood = mood;
-        if (energy !== undefined) data.energy = energy;
     
         const user = await prisma.user.update({
           where: { id: req.user.id },
