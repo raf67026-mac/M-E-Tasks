@@ -24,9 +24,6 @@ model User {
   email    String @unique
   password String
 
-  name     String?     // 👈 أضيفي هذا
-  username String?     // 👈 وأضيفي هذا
-
   resetToken       String?
   resetTokenExpiry DateTime?
   createdAt        DateTime @default(now())
